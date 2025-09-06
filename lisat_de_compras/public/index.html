@@ -3,37 +3,222 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lista de Compras</title>
+    <title>Sua Lista de Compras // lo-fi dark edition</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; }
-        .container { max-width: 600px; margin: 40px auto; padding: 20px; background-color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-radius: 8px; }
-        h1 { text-align: center; color: #1c1e21; }
-        .form-group { margin-bottom: 15px; display: flex; gap: 10px; }
-        .form-group input { flex: 1; padding: 10px; border: 1px solid #dddfe2; border-radius: 6px; font-size: 16px; }
-        .form-group button { padding: 10px 15px; background-color: #28a745; color: white; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; font-weight: bold; }
-        .item-list { list-style: none; padding: 0; }
-        .item-list li { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #dddfe2; }
-        .item-list li:last-child { border-bottom: none; }
-        .item-list button { margin-left: 5px; cursor: pointer; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; }
-        .btn-edit { background-color: #1877f2; color: white; }
-        .btn-delete { background-color: #fa3e3e; color: white; }
+        /* Paleta de Cores Lo-fi Escura e Calma */
+        :root {
+            --bg-color: #282A36;      /* Fundo escuro (Dark Grayish Blue) */
+            --container-bg: #363945;  /* Fundo do card mais claro que o BG */
+            --text-color: #F8F8F2;    /* Texto claro (quase branco) */
+            --subtle-text: #BD93F9;   /* Cor sutil para detalhes (Purple) */
+            --primary-color: #8BE9FD; /* Azul claro (Cyan) para destaque */
+            --primary-hover: #50FA7B; /* Verde claro (Green) para hover */
+            --accent-color: #FF79C6;  /* Rosa (Pink) para ações perigosas */
+            --border-color: #44475A;  /* Borda mais escura */
+            --shadow: 0 4px 8px rgba(0,0,0,0.2), 0 12px 24px rgba(0,0,0,0.25);
+            --border-radius: 15px;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+            color: var(--text-color);
+            line-height: 1.6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow-x: hidden; /* Evita scroll horizontal indesejado */
+        }
+
+        .container {
+            width: 100%;
+            max-width: 550px;
+            padding: 35px;
+            background-color: var(--container-bg);
+            box-shadow: var(--shadow);
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-color);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        h1 {
+            text-align: center;
+            font-weight: 600;
+            color: var(--text-color);
+            font-size: 2.2em;
+            letter-spacing: 1px;
+            margin-bottom: 30px;
+            font-family: 'Roboto Mono', monospace; /* Fonte monoespaçada para título */
+            text-transform: lowercase; /* Título em minúsculas */
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap; /* Permite que os itens quebrem linha em telas pequenas */
+        }
+
+        .form-group input {
+            flex: 1;
+            min-width: 120px; /* Garante que não fiquem muito pequenos */
+            padding: 12px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 1em;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: box-shadow 0.3s ease, border-color 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(139, 233, 253, 0.3); /* Sombra mais vibrante ao focar */
+        }
+
+        .form-group button {
+            /* flex-shrink: 0; */ /* Impede que o botão encolha */
+            padding: 12px 20px;
+            background-color: var(--primary-color);
+            color: var(--bg-color); /* Cor do texto do botão para combinar com o fundo */
+            border: none;
+            border-radius: 10px;
+            font-size: 1em;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            text-transform: lowercase; /* Botão em minúsculas */
+        }
+
+        .form-group button:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+        }
+
+        .item-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .item-list li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 10px;
+            border-bottom: 1px solid var(--border-color);
+            animation: fadeIn 0.6s ease forwards;
+            opacity: 0;
+            flex-wrap: wrap; /* Garante que os itens quebrem linha */
+        }
+        
+        .item-list li:last-child {
+            border-bottom: none;
+        }
+
+        .item-list li span {
+            font-weight: 500;
+            color: var(--text-color);
+            flex-grow: 1; /* Permite que o texto ocupe o espaço disponível */
+            margin-right: 10px; /* Espaçamento entre texto e botões */
+            min-width: 150px; /* Garante que o texto não fique espremido */
+            word-break: break-word; /* Quebra palavras longas */
+        }
+
+        .item-list .actions {
+            display: flex;
+            gap: 8px; /* Espaçamento entre os botões de ação */
+            margin-top: 5px; /* Ajuste para telas menores */
+        }
+
+        .item-list .actions button {
+            cursor: pointer;
+            border: 1px solid transparent;
+            padding: 7px 14px;
+            border-radius: 8px;
+            font-weight: 600;
+            background-color: transparent;
+            transition: all 0.3s ease;
+            text-transform: lowercase; /* Botões em minúsculas */
+            min-width: 70px; /* Garante tamanho mínimo para botões */
+            text-align: center; /* Centraliza o texto nos botões */
+        }
+        
+        .btn-edit {
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        .btn-edit:hover {
+            background-color: var(--primary-color);
+            color: var(--bg-color); /* Texto escuro no hover */
+        }
+
+        .btn-delete {
+            color: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+        .btn-delete:hover {
+             background-color: var(--accent-color);
+            color: var(--bg-color); /* Texto escuro no hover */
+        }
+
+        /* Animações tranquilas */
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+            100% { transform: translateY(0px); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Media Queries para responsividade */
+        @media (max-width: 480px) {
+            .form-group {
+                flex-direction: column; /* Inputs e botão em coluna */
+                gap: 10px;
+            }
+            .form-group input, .form-group button {
+                width: 100%; /* Ocupam largura total */
+            }
+            .item-list li {
+                flex-direction: column; /* Itens da lista em coluna */
+                align-items: flex-start; /* Alinha o texto à esquerda */
+            }
+            .item-list li span {
+                margin-bottom: 8px;
+            }
+            .item-list .actions {
+                width: 100%;
+                justify-content: flex-end; /* Botões à direita */
+            }
+        }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1>Lista de Compras</h1>
+        <h1>minha lista de compras</h1>
         <form id="add-item-form">
             <div class="form-group">
-                <input type="text" id="item-name" placeholder="Nome do produto" required>
-                <input type="number" id="item-price" placeholder="Valor do produto" step="0.01" required>
-                <button type="submit">Adicionar Produto</button>
+                <input type="text" id="item-name" placeholder="o que comprar..." required>
+                <input type="number" id="item-price" placeholder="valor" step="0.01" required>
+                <button type="submit">adicionar</button>
             </div>
         </form>
         <ul id="shopping-list" class="item-list"></ul>
     </div>
 
     <script>
+        // O JavaScript continua o mesmo
         const apiUrl = 'http://localhost:3000/api';
         const form = document.getElementById('add-item-form');
         const itemNameInput = document.getElementById('item-name');
@@ -44,15 +229,16 @@
             try {
                 const response = await fetch(`${apiUrl}/items`);
                 const items = await response.json();
+                
                 shoppingList.innerHTML = '';
                 items.forEach(item => {
                     const li = document.createElement('li');
                     li.dataset.id = item._id;
                     li.innerHTML = `
                         <span>${item.name} - R$ ${Number(item.price).toFixed(2).replace('.', ',')}</span>
-                        <div>
-                            <button class="btn-edit" onclick="editItem('${item._id}')">Editar</button>
-                            <button class="btn-delete" onclick="deleteItem('${item._id}')">Excluir</button>
+                        <div class="actions">
+                            <button class="btn-edit" onclick="editItem('${item._id}')">editar</button>
+                            <button class="btn-delete" onclick="deleteItem('${item._id}')">remover</button>
                         </div>
                     `;
                     shoppingList.appendChild(li);
@@ -80,7 +266,7 @@
         });
 
         async function deleteItem(id) {
-            if (confirm('Tem certeza que deseja excluir este item?')) {
+            if (confirm('remover este item?')) {
                 try {
                     await fetch(`${apiUrl}/items/${id}`, { method: 'DELETE' });
                     fetchItems();
@@ -96,12 +282,16 @@
                 const [currentName, currentPriceStr] = itemElement.textContent.split(' - R$ ');
                 const currentPrice = currentPriceStr.replace(',', '.');
                 
-                const newName = prompt("Novo nome do produto:", currentName);
-                if (newName === null || newName.trim() === '') return;
+                const newName = prompt("editar nome:", currentName);
+                if (newName === null) return;
 
-                const newPriceStr = prompt("Novo valor do produto:", currentPrice);
+                const newPriceStr = prompt("editar valor:", currentPrice);
+                if (newPriceStr === null) return;
                 const newPrice = parseFloat(newPriceStr.replace(',', '.'));
-                if (newPriceStr === null || isNaN(newPrice)) return;
+                if (isNaN(newPrice)) {
+                    alert('por favor, insira um número.');
+                    return;
+                }
 
                 await fetch(`${apiUrl}/items/${id}`, {
                     method: 'PUT',
@@ -114,7 +304,6 @@
             }
         }
 
-        // Carrega os itens ao iniciar a página
         fetchItems();
     </script>
 </body>
