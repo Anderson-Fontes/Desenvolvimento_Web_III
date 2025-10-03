@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Conversor de Moeda Pro</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-color: #1a1a2e;
+            --container-color: #2c2c3a;
+            --primary-blue: #3671E9;
+            --primary-blue-hover: #2a5ac8;
+            --text-primary: #FFFFFF;
+            --text-secondary: #b0b0c0;
+            --border-color: #444455;
+            --shadow-color: rgba(0, 0, 0, 0.2);
+        }
+
+        /* --- RESET E ESTILOS GERAIS --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: radial-gradient(circle, #2c2c3a 0%, var(--bg-color) 100%);
+            color: var(--text-primary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* --- CONTAINER PRINCIPAL (CARTÃO) --- */
+        .converter-container {
+            background-color: var(--container-color);
+            padding: 40px;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 10px 30px var(--shadow-color);
+            text-align: center;
+            width: 100%;
+            max-width: 420px;
+            transition: transform 0.3s ease;
+        }
+
+        h1 {
+            margin-bottom: 30px;
+            font-size: 2.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* --- FORMULÁRIO --- */
+        #convertForm {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .form-group {
+            width: 100%;
+            position: relative;
+        }
+
+        /* Estilo unificado para input e select */
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 15px;
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.3s ease;
+            appearance: none; /* Remove a seta padrão */
+        }
+
+        input[type="number"]:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 4px rgba(54, 113, 233, 0.2);
+        }
+        
+        /* Adiciona uma seta personalizada para o select */
+        .select-wrapper {
+            position: relative;
+            width: 100%;
+        }
+        .select-wrapper::after {
+            content: '▼';
+            position: absolute;
+            top: 50%;
+            right: 20px;
+            transform: translateY(-50%);
+            color: var(--primary-blue);
+            pointer-events: none; /* Permite clicar no select */
+        }
+
+        /* --- ÍCONE DE TROCA --- */
+        .swap-icon {
+            cursor: default;
+            margin: -5px 0;
+        }
+        .swap-icon svg {
+            width: 32px;
+            height: 32px;
+            fill: var(--primary-blue);
+            transform: rotate(90deg);
+        }
+        
+        /* --- BOTÃO --- */
+        button {
+            width: 100%;
+            background: linear-gradient(90deg, var(--primary-blue) 0%, #5a8eee 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 16px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(54, 113, 233, 0.3);
+        }
+
+        /* --- ÁREA DE RESULTADO E ANIMAÇÃO --- */
+        #result {
+            margin-top: 30px;
+            font-size: 1.5rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            min-height: 2em;
+            line-height: 2em;
+            transition: color 0.3s ease;
+        }
+        #result.loading {
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.5; }
+            50% { opacity: 1; }
+            100% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body>
+    <div class="converter-container">
+        <h1>Conversor Pro</h1>
+        <form id="convertForm">
+            <div class="form-group">
+                <input type="number" step="0.01" name="amount" placeholder="100.00" required />
+            </div>
+            
+            <div class="select-wrapper">
+                <select name="from" required>
+                    <option value="" disabled selected>Converter De</option>
+                    <option value="BRL">BRL - Real Brasileiro</option>
+                    <option value="USD">USD - Dólar Americano</option>
+                    <option value="EUR">EUR - Euro</option>
+                    <option value="GBP">GBP - Libra Esterlina</option>
+                </select>
+            </div>
+
+            <div class="swap-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M16 17.01V10h-2v7.01h-3L15 21l4-3.99h-3zM9 3L5 6.99h3V14h2V6.99h3L9 3z"/></svg>
+            </div>
+
+            <div class="select-wrapper">
+                <select name="to" required>
+                    <option value="" disabled selected>Para</option>
+                    <option value="USD">USD - Dólar Americano</option>
+                    <option value="EUR">EUR - Euro</option>
+                    <option value="BRL">BRL - Real Brasileiro</option>
+                    <option value="JPY">JPY - Iene Japonês</option>
+                </select>
+            </div>
+
+            <button type="submit">Converter</button>
+        </form>
+        <h2 id="result"></h2>
+    </div>
+
+    <script>
+        document.getElementById("convertForm").addEventListener("submit", async function (e) {
+            e.preventDefault();
+            const form = e.target;
+            const amount = form.amount.value;
+            const from = form.from.value;
+            const to = form.to.value;
+            const resultElement = document.getElementById("result");
+            
+            resultElement.textContent = 'Convertendo...';
+            resultElement.style.color = 'var(--text-secondary)';
+            resultElement.classList.add('loading'); // Adiciona classe para animação
+
+            const response = await fetch(`/convert?amount=${amount}&from=${from}&to=${to}`);
+            const data = await response.json();
+            
+            resultElement.classList.remove('loading'); // Remove classe de animação
+            
+            if (data.result) {
+                resultElement.textContent = data.result;
+                resultElement.style.color = 'var(--text-primary)';
+            } else {
+                resultElement.textContent = data.error;
+                resultElement.style.color = '#ff6b6b'; // Cor de erro
+            }
+        });
+    </script>
+</body>
+</html>
