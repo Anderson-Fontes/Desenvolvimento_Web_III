@@ -1,0 +1,202 @@
+/* frontend/style.css - Tema Dark/Neon */
+
+/* --- Variáveis de Cor --- */
+:root {
+  --cor-fundo: #121212;
+  --cor-fundo-secundaria: #1a1a1a;
+  --cor-fundo-formulario: #242424;
+  --cor-texto-primaria: #e0e0e0;
+  --cor-texto-secundaria: #b3b3b3;
+  --cor-borda: #333333;
+  --cor-principal: #00aaff;
+  --cor-principal-hover: #0088cc;
+  --cor-sucesso: #00c853;
+  --cor-sucesso-hover: #00a042;
+  --cor-perigo: #ff3547;
+  --cor-perigo-hover: #d12a38;
+  --cor-aviso: #ffc107;
+  --cor-aviso-hover: #e0a800;
+  --sombra: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+/* --- Estilos Globais --- */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+    Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  background-color: var(--cor-fundo);
+  color: var(--cor-texto-primaria);
+  line-height: 1.6;
+}
+
+.container {
+  max-width: 900px;
+  margin: 30px auto;
+  padding: 25px;
+  background-color: var(--cor-fundo-secundaria);
+  border-radius: 12px;
+  box-shadow: var(--sombra);
+}
+
+h1, h2 {
+  text-align: center;
+  margin-bottom: 25px;
+  color: #fff;
+  letter-spacing: 1px;
+}
+
+h1 {
+  font-size: 2.5rem;
+  color: var(--cor-principal);
+  text-shadow: 0 0 10px var(--cor-principal);
+}
+
+h2 {
+  font-size: 1.8rem;
+  border-bottom: 2px solid var(--cor-borda);
+  padding-bottom: 10px;
+}
+
+/* --- Formulário --- */
+form {
+  background: var(--cor-fundo-formulario);
+  padding: 25px;
+  border-radius: 8px;
+  margin-bottom: 30px;
+  border: 1px solid var(--cor-borda);
+  box-shadow: var(--sombra);
+}
+
+.form-group {
+  margin-bottom: 18px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: var(--cor-texto-secundaria);
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--cor-borda);
+  border-radius: 6px;
+  background-color: var(--cor-fundo);
+  color: var(--cor-texto-primaria);
+  font-size: 1rem;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: var(--cor-principal);
+  box-shadow: 0 0 8px rgba(0, 170, 255, 0.5);
+}
+
+/* --- Botões --- */
+button {
+  color: white;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: background-color 0.3s, transform 0.2s;
+  margin-right: 10px;
+}
+
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Botão Salvar (Submit) */
+button[type="submit"] {
+  background-color: var(--cor-sucesso);
+}
+button[type="submit"]:hover {
+  background-color: var(--cor-sucesso-hover);
+}
+
+/* Botões de Ação da Tabela */
+.btn-editar, .btn-excluir, .btn-cancelar {
+  padding: 8px 12px;
+  font-size: 0.9rem;
+}
+
+.btn-editar {
+  background-color: var(--cor-aviso);
+  color: #111;
+}
+.btn-editar:hover {
+  background-color: var(--cor-aviso-hover);
+}
+
+.btn-excluir {
+  background-color: var(--cor-perigo);
+}
+.btn-excluir:hover {
+  background-color: var(--cor-perigo-hover);
+}
+
+.btn-cancelar {
+  background-color: #6c757d;
+}
+.btn-cancelar:hover {
+  background-color: #5a6268;
+}
+
+/* --- Tabela --- */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  box-shadow: var(--sombra);
+  border-radius: 8px;
+  overflow: hidden; /* Garante que o radius funcione no header */
+}
+
+th, td {
+  border: 1px solid var(--cor-borda);
+  padding: 14px;
+  text-align: left;
+}
+
+/* Cabeçalho da Tabela */
+thead {
+  background-color: var(--cor-principal);
+  color: #fff;
+  font-size: 1.1rem;
+  letter-spacing: 0.5px;
+}
+
+/* Corpo da Tabela */
+tbody tr {
+  background-color: var(--cor-fundo-formulario);
+  transition: background-color 0.3s;
+}
+
+tbody tr:nth-child(even) {
+  background-color: var(--cor-fundo-secundaria);
+}
+
+tbody tr:hover {
+  background-color: #3a3a3a;
+  color: #fff;
+}
+
+td:last-child {
+  /* Célula de Ações */
+  text-align: center;
+  min-width: 180px;
+}
