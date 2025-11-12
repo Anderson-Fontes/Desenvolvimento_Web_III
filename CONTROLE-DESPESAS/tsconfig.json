@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    /* Opções do Compilador */
+    "target": "es6",                // Compila para a versão ES6 do JavaScript
+    "module": "commonjs",           // Usa o sistema de módulos CommonJS (padrão do Node.js)
+    "outDir": "./dist",             // Onde os arquivos .js compilados irão
+    "rootDir": "./src",             // Onde estão os arquivos .ts de origem
+    "strict": true,                 // Habilita todas as checagens estritas de tipo
+    "esModuleInterop": true,        // ESSENCIAL: Permite importar módulos CommonJS (como Express)
+    
+    /* Configurações Adicionais */
+    "skipLibCheck": true,           // Pula a verificação de tipos em arquivos de definição (.d.ts)
+    "forceConsistentCasingInFileNames": true // Garante que os nomes dos arquivos sejam consistentes
+  },
+  "include": [
+    "src/**/*" // Quais arquivos o TypeScript deve incluir na compilação
+  ],
+  "exclude": [
+    "node_modules" // Quais pastas ignorar
+  ]
+}

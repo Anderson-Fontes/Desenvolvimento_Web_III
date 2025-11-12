@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de Despesas</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <h1>Controle de Despesas</h1> <form id="expense-form">
+        <input type="text" id="description" placeholder="Descrição" required> <input type="number" id="amount" placeholder="Valor" min="0.01" step="0.01" required> <input type="date" id="date"> <input type="hidden" id="expense-id">
+        <button type="submit" id="submit-button">Cadastrar Despesa</button> </form>
+
+    <h2 id="total-expenses">Total das Despesas: R$0.00</h2> <ul id="expense-list">
+        </ul>
+
+    <script src="script.js"></script>
+</body>
+</html>
