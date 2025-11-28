@@ -1,0 +1,37 @@
+{
+  "compilerOptions": {
+    /* Type-checking */
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    
+    /* Modules */
+    "module": "commonjs",
+    "rootDir": "./src", 
+    "outDir": "./dist", 
+    "esModuleInterop": true, 
+    "resolveJsonModule": true,
+    
+    /* JavaScript Support */
+    "target": "es2020", // Define o alvo da compilação para uma versão moderna
+    "sourceMap": true, 
+    "allowJs": true,
+    "skipLibCheck": true,
+    
+    /* Output Formatting */
+    "pretty": true,
+    "removeComments": true,
+    
+    /* Other */
+    "moduleResolution": "node",
+    "typeRoots": [
+      "./node_modules/@types",
+      "./src/@types"
+    ]
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

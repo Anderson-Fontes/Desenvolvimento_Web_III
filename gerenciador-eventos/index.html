@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciador de Eventos CRUD Completo</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f9; }
+        .container { max-width: 1200px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h1, h2 { color: #333; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        form { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 30px; padding: 15px; border: 1px solid #ccc; border-radius: 5px; background: #fafafa; }
+        form div { display: flex; flex-direction: column; }
+        label { margin-bottom: 5px; font-weight: bold; color: #555; }
+        input, textarea { padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
+        .form-button { 
+            padding: 10px 15px; background-color: #007bff; color: white; border: none; 
+            border-radius: 4px; cursor: pointer; transition: background-color 0.3s; 
+            grid-column: span 2; margin-top: 10px; 
+        }
+        .form-button:hover { background-color: #0056b3; }
+        .message { padding: 10px; margin-bottom: 15px; border-radius: 4px; font-weight: bold; }
+        .success { background-color: #d4edda; color: #155724; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border-color: #f5c6cb; }
+        .event-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+        .event-card { border: 1px solid #ddd; padding: 15px; border-radius: 6px; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .event-card h3 { margin-top: 0; color: #007bff; }
+        .event-card p { margin: 5px 0; font-size: 0.9em; }
+        .event-card p strong { color: #333; }
+        .event-actions { margin-top: 10px; display: flex; gap: 10px; }
+        .edit-btn { background-color: #ffc107; color: #333; }
+        .delete-btn { background-color: #dc3545; color: white; }
+        .edit-btn:hover { background-color: #e0a800; }
+        .delete-btn:hover { background-color: #c82333; }
+        .event-actions button { padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🗓️ Gerenciador de Eventos CRUD</h1>
+
+        <div id="message-area" class="message" style="display: none;"></div>
+
+        <h2>Adicionar Novo Evento</h2>
+        <form id="add-event-form">
+            <div>
+                <label for="titulo">Título:</label>
+                <input type="text" id="titulo" name="titulo" required>
+            </div>
+            <div>
+                <label for="local">Local:</label>
+                <input type="text" id="local" name="local" required>
+            </div>
+            <div>
+                <label for="data">Data:</label>
+                <input type="datetime-local" id="data" name="data" required>
+            </div>
+            <div>
+                <label for="valor">Valor (Float):</label>
+                <input type="number" id="valor" name="valor" step="0.01" required>
+            </div>
+            <div style="grid-column: span 2;">
+                <label for="descricao">Descrição (Opcional):</label>
+                <textarea id="descricao" name="descricao"></textarea>
+            </div>
+            <button type="submit" class="form-button">Criar Evento</button>
+        </form>
+
+        <h2>Lista de Eventos</h2>
+        <div id="events-container" class="event-list">
+            </div>
+
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3000/api/eventos';
+        const form = document.getElementById('add-event-form');
+        const eventsContainer = document.getElementById('events-container');
+        const messageArea = document.getElementById('message-area');
+
+        // --- Funções de Utilidade ---
+
+        function displayMessage(type, message) {
+            messageArea.style.display = 'block';
+            messageArea.className = `message ${type}`;
+            messageArea.textContent = message;
+            setTimeout(() => {
+                messageArea.style.display = 'none';
+            }, 5000);
+        }
+
+        function formatDateTime(isoString) {
+            // Verifica se a string é válida e tenta formatar
+            try {
+                const date = new Date(isoString);
+                if (isNaN(date)) return 'Data Inválida';
+                
+                const options = { 
+                    year: 'numeric', month: '2-digit', day: '2-digit', 
+                    hour: '2-digit', minute: '2-digit' 
+                };
+                // Adiciona o fuso horário para garantir que seja interpretado corretamente
+                return date.toLocaleDateString('pt-BR', options) + ' ' + date.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
+            } catch (e) {
+                return 'Data Inválida';
+            }
+        }
+
+        // --- Listagem de Eventos (READ) ---
+
+        async function fetchEvents() {
+            try {
+                const response = await fetch(API_URL);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const result = await response.json();
+                
+                eventsContainer.innerHTML = ''; 
+                
+                if (result.data && result.data.length > 0) {
+                    result.data.forEach(event => {
+                        const card = document.createElement('div');
+                        card.className = 'event-card';
+                        
+                        // Formatação para preencher o input datetime-local no futuro (se for usar um modal de edição)
+                        const isoDateForInput = event.data ? new Date(event.data).toISOString().substring(0, 16) : '';
+
+                        card.innerHTML = `
+                            <h3>${event.titulo}</h3>
+                            <p><strong>Local:</strong> ${event.local}</p>
+                            <p><strong>Data:</strong> ${formatDateTime(event.data)}</p>
+                            <p><strong>Valor:</strong> R$ ${event.valor.toFixed(2).replace('.', ',')}</p>
+                            ${event.descricao ? `<p><strong>Descrição:</strong> ${event.descricao}</p>` : ''}
+                            
+                            <div class="event-actions">
+                                <button class="edit-btn" data-id="${event._id}" 
+                                        data-titulo="${event.titulo}" 
+                                        data-local="${event.local}" 
+                                        data-data="${isoDateForInput}" 
+                                        data-valor="${event.valor}" 
+                                        data-descricao="${event.descricao || ''}">
+                                    Editar
+                                </button>
+                                <button class="delete-btn" data-id="${event._id}">Excluir</button>
+                            </div>
+                        `;
+                        eventsContainer.appendChild(card);
+                    });
+                    // Adiciona os listeners para os novos botões
+                    addEventListeners(); 
+
+                } else {
+                    eventsContainer.innerHTML = '<p>Nenhum evento cadastrado ainda.</p>';
+                }
+            } catch (error) {
+                console.error('Erro ao buscar eventos:', error);
+                displayMessage('error', '❌ Não foi possível carregar os eventos. Servidor offline ou problema de CORS.');
+            }
+        }
+
+        // --- Adicionar Evento (CREATE) ---
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(form);
+            const data = {
+                titulo: formData.get('titulo'),
+                descricao: formData.get('descricao'),
+                // A data precisa ser enviada como string ISO, o input já faz isso
+                data: formData.get('data'), 
+                local: formData.get('local'),
+                valor: parseFloat(formData.get('valor')),
+            };
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data),
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    displayMessage('success', result.message);
+                    form.reset();
+                    fetchEvents();
+                } else {
+                    displayMessage('error', result.message || 'Erro desconhecido ao criar evento.');
+                }
+
+            } catch (error) {
+                console.error('Erro na requisição POST:', error);
+                displayMessage('error', '❌ Erro de rede ou servidor ao criar evento.');
+            }
+        });
+
+        // --- Excluir Evento (DELETE) ---
+
+        async function deleteEvent(id) {
+            if (!confirm(`Tem certeza que deseja excluir o evento com ID ${id}?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/${id}`, {
+                    method: 'DELETE',
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    displayMessage('success', result.message);
+                    fetchEvents(); // Recarrega a lista
+                } else {
+                    displayMessage('error', result.message || 'Erro ao excluir evento.');
+                }
+            } catch (error) {
+                console.error('Erro na requisição DELETE:', error);
+                displayMessage('error', '❌ Erro de rede ao excluir evento.');
+            }
+        }
+
+        // --- Editar Evento (UPDATE) ---
+
+        async function editEvent(id, oldData) {
+            // **Implementação simples usando prompt() para agilizar**
+            // Em um projeto real, você usaria um Modal HTML mais robusto
+            const novoTitulo = prompt("Novo Título:", oldData.titulo);
+            if (novoTitulo === null || novoTitulo.trim() === "") return;
+
+            const novoValorStr = prompt("Novo Valor (Float):", oldData.valor);
+            if (novoValorStr === null || isNaN(parseFloat(novoValorStr))) return;
+            
+            const novoValor = parseFloat(novoValorStr);
+
+            const newData = {
+                titulo: novoTitulo,
+                // Mantém outros campos inalterados se não forem solicitados no prompt
+                valor: novoValor
+            };
+            
+            try {
+                const response = await fetch(`${API_URL}/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(newData),
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    displayMessage('success', result.message);
+                    fetchEvents(); // Recarrega a lista
+                } else {
+                    displayMessage('error', result.message || 'Erro ao atualizar evento.');
+                }
+            } catch (error) {
+                console.error('Erro na requisição PUT:', error);
+                displayMessage('error', '❌ Erro de rede ao editar evento.');
+            }
+        }
+
+        // --- Adicionar Listeners nos Botões ---
+        
+        function addEventListeners() {
+            // Listener para Excluir
+            document.querySelectorAll('.delete-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const id = e.target.dataset.id;
+                    deleteEvent(id);
+                });
+            });
+
+            // Listener para Editar
+            document.querySelectorAll('.edit-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const id = e.target.dataset.id;
+                    const oldData = {
+                        titulo: e.target.dataset.titulo,
+                        local: e.target.dataset.local,
+                        data: e.target.dataset.data,
+                        valor: parseFloat(e.target.dataset.valor),
+                        descricao: e.target.dataset.descricao
+                    };
+                    editEvent(id, oldData);
+                });
+            });
+        }
+        
+        // Inicia a aplicação carregando os eventos
+        document.addEventListener('DOMContentLoaded', fetchEvents);
+
+    </script>
+</body>
+</html>
