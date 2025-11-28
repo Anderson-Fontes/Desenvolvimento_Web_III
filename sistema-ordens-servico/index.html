@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Requisições - Ordens de Serviço</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+        h1 {
+            color: #0056b3;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .form-section, .list-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        input[type="text"], input[type="number"], select, textarea, input[type="date"] {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #ordensList {
+            list-style: none;
+            padding: 0;
+        }
+        .ordem-item {
+            background: #e9ecef;
+            margin-bottom: 10px;
+            padding: 15px;
+            border-radius: 4px;
+        }
+        .ordem-item p {
+            margin: 5px 0;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Sistema de Ordens de Serviço - Teste de API</h1>
+
+        <div class="form-section">
+            <h2>Criar / Atualizar Ordem</h2>
+            <form id="ordemForm">
+                <input type="hidden" id="ordemId" value="">
+
+                <label for="titulo">Título (Obrigatório):</label>
+                <input type="text" id="titulo" required>
+
+                <label for="descricao">Descrição (Obrigatório):</label>
+                <textarea id="descricao" required></textarea>
+
+                <label for="setorSolicitante">Setor Solicitante (Obrigatório):</label>
+                <input type="text" id="setorSolicitante" required>
+
+                <label for="valorServico">Valor do Serviço (Obrigatório):</label>
+                <input type="number" id="valorServico" step="0.01" required>
+
+                <label for="prioridade">Prioridade (Obrigatório):</label>
+                <select id="prioridade" required>
+                    <option value="baixa">Baixa</option>
+                    <option value="média" selected>Média</option>
+                    <option value="alta">Alta</option>
+                </select>
+
+                <label for="responsavel">Responsável (Opcional):</label>
+                <input type="text" id="responsavel">
+
+                <label for="prazoEstimado">Prazo Estimado (Opcional):</label>
+                <input type="date" id="prazoEstimado">
+
+                <label for="status">Status:</label>
+                <select id="status">
+                    <option value="aberta">Aberta</option>
+                    <option value="em andamento">Em Andamento</option>
+                    <option value="concluída">Concluída</option>
+                </select>
+
+                <button type="submit" id="submitBtn">Criar Ordem</button>
+                <button type="button" id="cancelBtn" style="display: none;">Cancelar Atualização</button>
+            </form>
+            <p id="message" style="margin-top: 15px;"></p>
+        </div>
+
+        <div class="list-section">
+            <h2>Ordens de Serviço Registradas</h2>
+
+            <div style="margin-bottom: 15px;">
+                <input type="text" id="filtroTitulo" placeholder="Pesquisar por Título">
+                <select id="filtroStatus">
+                    <option value="">Filtrar por Status (Todos)</option>
+                    <option value="aberta">Aberta</option>
+                    <option value="em andamento">Em Andamento</option>
+                    <option value="concluída">Concluída</option>
+                </select>
+                <select id="filtroPrioridade">
+                    <option value="">Filtrar por Prioridade (Todas)</option>
+                    <option value="baixa">Baixa</option>
+                    <option value="média">Média</option>
+                    <option value="alta">Alta</option>
+                </select>
+                <input type="text" id="filtroSetor" placeholder="Filtrar por Setor">
+                <button onclick="carregarOrdens()">Aplicar Filtros</button>
+            </div>
+
+            <ul id="ordensList">
+                </ul>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3000/api/ordens';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            carregarOrdens();
+            document.getElementById('ordemForm').addEventListener('submit', handleSubmit);
+            document.getElementById('cancelBtn').addEventListener('click', resetForm);
+            
+            // Recarrega as ordens ao alterar os filtros de título, status ou setor
+            document.getElementById('filtroTitulo').addEventListener('input', carregarOrdens);
+            document.getElementById('filtroStatus').addEventListener('change', carregarOrdens);
+            document.getElementById('filtroPrioridade').addEventListener('change', carregarOrdens);
+            document.getElementById('filtroSetor').addEventListener('input', carregarOrdens);
+        });
+
+        // Função para carregar e exibir as ordens (inclui filtros)
+        async function carregarOrdens() {
+            const listElement = document.getElementById('ordensList');
+            listElement.innerHTML = '<li>Carregando...</li>';
+            
+            // Coletar filtros
+            const filtroTitulo = document.getElementById('filtroTitulo').value;
+            const filtroStatus = document.getElementById('filtroStatus').value;
+            const filtroPrioridade = document.getElementById('filtroPrioridade').value;
+            const filtroSetor = document.getElementById('filtroSetor').value;
+
+            let url = `${API_URL}?`;
+            if (filtroTitulo) url += `titulo=${filtroTitulo}&`;
+            if (filtroStatus) url += `status=${filtroStatus}&`;
+            if (filtroPrioridade) url += `prioridade=${filtroPrioridade}&`;
+            if (filtroSetor) url += `setor=${filtroSetor}&`;
+            
+            try {
+                const response = await fetch(url.slice(0, -1)); // Remove o último '&'
+                if (!response.ok) throw new Error('Erro ao carregar dados da API');
+                
+                const ordens = await response.json();
+                listElement.innerHTML = ''; // Limpa a lista
+
+                if (ordens.length === 0) {
+                    listElement.innerHTML = '<li>Nenhuma ordem de serviço encontrada com os filtros atuais.</li>';
+                    return;
+                }
+
+                ordens.forEach(ordem => {
+                    const li = document.createElement('li');
+                    li.className = 'ordem-item';
+                    li.innerHTML = `
+                        <strong>ID:</strong> ${ordem._id}<br>
+                        <strong>Título:</strong> ${ordem.titulo}<br>
+                        <strong>Descrição:</strong> ${ordem.descricao.substring(0, 100)}...<br>
+                        <strong>Status:</strong> <span style="font-weight: bold; color: ${getStatusColor(ordem.status)}">${ordem.status.toUpperCase()}</span><br>
+                        <strong>Prioridade:</strong> ${ordem.prioridade}<br>
+                        <strong>Responsável:</strong> ${ordem.responsavel || 'Não Atribuído'}<br>
+                        <strong>Setor:</strong> ${ordem.setorSolicitante}<br>
+                        <strong>Valor:</strong> R$ ${ordem.valorServico.toFixed(2)}<br>
+                        <strong>Data Abertura:</strong> ${new Date(ordem.dataAbertura).toLocaleDateString()}<br>
+                        <button onclick="carregarParaAtualizar('${ordem._id}')">Editar</button>
+                        <button onclick="excluirOrdem('${ordem._id}', '${ordem.status}')" style="background-color: #dc3545;">Excluir</button>
+                    `;
+                    listElement.appendChild(li);
+                });
+            } catch (error) {
+                listElement.innerHTML = `<li class="error">Erro ao carregar ordens: ${error.message}. Certifique-se de que o backend está rodando em http://localhost:3000.</li>`;
+            }
+        }
+
+        // Função auxiliar para cor do status
+        function getStatusColor(status) {
+            switch (status) {
+                case 'aberta': return 'orange';
+                case 'em andamento': return 'blue';
+                case 'concluída': return 'green';
+                default: return 'gray';
+            }
+        }
+
+        // Função para submeter (Criar ou Atualizar)
+        async function handleSubmit(event) {
+            event.preventDefault();
+            const id = document.getElementById('ordemId').value;
+            const method = id ? 'PUT' : 'POST';
+            const url = id ? `${API_URL}/${id}` : API_URL;
+            const messageElement = document.getElementById('message');
+            messageElement.textContent = ''; // Limpa mensagens
+
+            const data = {
+                titulo: document.getElementById('titulo').value,
+                descricao: document.getElementById('descricao').value,
+                status: document.getElementById('status').value,
+                prioridade: document.getElementById('prioridade').value,
+                responsavel: document.getElementById('responsavel').value || undefined,
+                setorSolicitante: document.getElementById('setorSolicitante').value,
+                prazoEstimado: document.getElementById('prazoEstimado').value || undefined,
+                valorServico: parseFloat(document.getElementById('valorServico').value),
+            };
+
+            try {
+                const response = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data),
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    messageElement.className = 'error';
+                    messageElement.textContent = `Erro ${method === 'POST' ? 'Criando' : 'Atualizando'}: ${result.message || 'Verifique os dados.'}`;
+                    return;
+                }
+
+                messageElement.className = '';
+                messageElement.textContent = `Ordem ${method === 'POST' ? 'Criada' : 'Atualizada'} com sucesso!`;
+                
+                resetForm();
+                carregarOrdens();
+
+            } catch (error) {
+                messageElement.className = 'error';
+                messageElement.textContent = `Erro de Conexão: ${error.message}`;
+            }
+        }
+
+        // Função para carregar dados no formulário para atualização
+        async function carregarParaAtualizar(id) {
+            try {
+                const response = await fetch(`${API_URL}/${id}`);
+                const ordem = await response.json();
+
+                if (!response.ok) throw new Error(ordem.message || 'Ordem não encontrada.');
+
+                // Preenche o formulário
+                document.getElementById('ordemId').value = ordem._id;
+                document.getElementById('titulo').value = ordem.titulo;
+                document.getElementById('descricao').value = ordem.descricao;
+                document.getElementById('status').value = ordem.status;
+                document.getElementById('prioridade').value = ordem.prioridade;
+                document.getElementById('responsavel').value = ordem.responsavel || '';
+                document.getElementById('setorSolicitante').value = ordem.setorSolicitante;
+                document.getElementById('valorServico').value = ordem.valorServico;
+                
+                // Formatação da data (necessário para input type="date")
+                const prazoDate = ordem.prazoEstimado ? new Date(ordem.prazoEstimado).toISOString().split('T')[0] : '';
+                document.getElementById('prazoEstimado').value = prazoDate;
+
+
+                // Ajusta botões
+                document.getElementById('submitBtn').textContent = 'Atualizar Ordem';
+                document.getElementById('cancelBtn').style.display = 'inline';
+
+                window.scrollTo({ top: 0, behavior: 'smooth' }); // Rola para o formulário
+            } catch (error) {
+                alert(`Erro ao carregar ordem: ${error.message}`);
+            }
+        }
+
+        // Função para resetar o formulário
+        function resetForm() {
+            document.getElementById('ordemForm').reset();
+            document.getElementById('ordemId').value = '';
+            document.getElementById('submitBtn').textContent = 'Criar Ordem';
+            document.getElementById('cancelBtn').style.display = 'none';
+            document.getElementById('message').textContent = '';
+            document.getElementById('status').value = 'aberta'; // Volta ao default
+            document.getElementById('prioridade').value = 'média'; // Volta ao default
+        }
+
+        // Função para Excluir
+        async function excluirOrdem(id, status) {
+            if (status !== 'concluída') {
+                alert('Apenas ordens com status "concluída" podem ser excluídas, conforme regra de negócio.');
+                return;
+            }
+
+            if (!confirm(`Tem certeza que deseja excluir a ordem ${id} (Status: ${status})?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/${id}`, {
+                    method: 'DELETE',
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    alert(`Erro ao excluir: ${errorData.message}`);
+                    return;
+                }
+
+                alert('Ordem de serviço excluída com sucesso!');
+                carregarOrdens();
+            } catch (error) {
+                alert(`Erro de conexão ao tentar excluir: ${error.message}`);
+            }
+        }
+    </script>
+</body>
+</html>

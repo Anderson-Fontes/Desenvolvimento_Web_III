@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    /* Configurações Fundamentais */
+    "target": "es2020",                                /* Especifica a versão alvo do ECMAScript (Node.js moderno) */
+    "module": "commonjs",                              /* Especifica o sistema de módulos a ser usado (padrão do Node.js) */
+    "rootDir": "./src",                                /* Especifica a pasta raiz dos arquivos TypeScript */
+    "outDir": "./dist",                                /* Especifica a pasta de saída para os arquivos JavaScript compilados */
+
+    /* Configurações de Módulos e Resolução */
+    "esModuleInterop": true,                           /* Permite imports compatíveis com CommonJS/ES Modules */
+    "forceConsistentCasingInFileNames": true,          /* Garante que as referências a arquivos tenham a capitalização correta */
+    "resolveJsonModule": true,                         /* Inclui a possibilidade de importar arquivos .json */
+
+    /* Verificações de Tipo */
+    "strict": true,                                    /* Ativa todas as opções rigorosas de verificação de tipo */
+    "skipLibCheck": true,                              /* Ignora a verificação de tipo em arquivos de declaração (librerias) */
+
+    /* Configurações Adicionais */
+    "sourceMap": true,                                 /* Gera arquivos de mapa de origem (.map) para facilitar o debug */
+    "lib": ["es2020"]                                  /* Inclui bibliotecas de declaração de tipos para o ambiente de execução */
+  },
+  "include": [
+    "src/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
